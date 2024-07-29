@@ -59,13 +59,19 @@ We introduce SceneDiffuser, a conditional generative model for 3D scene understa
     ```
 
 2. Install dependent libraries with `pip`.
-
+    (comment pytorch3d if problem)
     ```bash
     pip install -r pre-requirements.txt
     pip install -r requirements.txt
     ```
 
-    - We use `pytorch1.11` and `cuda11.3`, modify `pre-requirements.txt` to install [other versions](https://pytorch.org/get-started/previous-versions/) of `pytorch`.
+    <!-- - We use `pytorch1.11` and `cuda11.3`, modify `pre-requirements.txt` to install [other versions](https://pytorch.org/get-started/previous-versions/) of `pytorch`. -->
+    install pytorch3d from their official [website](https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md)
+
+    ```
+    pip install fvcore
+    pip install --no-index --no-cache-dir pytorch3d -f https://dl.fbaipublicfiles.com/pytorch3d/packaging/wheels/py38_cu113_pyt1110/download.html
+    ```
 
 3. Install [Isaac Gym](https://developer.nvidia.com/isaac-gym) and install [pointnet2](https://github.com/daveredrum/Pointnet2.ScanNet) by executing the following command (optional for grasp generation and arm motion planning).
 

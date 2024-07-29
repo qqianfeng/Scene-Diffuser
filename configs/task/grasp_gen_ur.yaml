@@ -29,8 +29,11 @@ dataset:
   use_color: false
   use_normal: false
   is_downsample: true
-  asset_dir: /home/wangzan/Data/SceneDiffuser/grasp_and_armmotion/datasets/MultiDex_UR/
-  asset_dir_slurm: /home/wangzan/Data/SceneDiffuser/grasp_and_armmotion/datasets/MultiDex_UR/
+#  data_dir: /home/wangzan/Data/LEMO/PROX_temporal/PROX_temporal/PROXD_temp
+  data_dir: /home/qian.feng/data/MultiDex_UR/shadowhand/
+  data_dir_slurm: /home/qian.feng/data/MultiDex_UR/shadowhand/
+  scene_path: /home/qian.feng/data/MultiDex_UR/object_pcds.pkl
+  scene_path_slurm: /home/qian.feng/data/MultiDex_UR/object_pcds.pkl
 
   train_transforms: ['NumpyToTensor']
   test_transforms: ['NumpyToTensor']
