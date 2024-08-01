@@ -19,8 +19,8 @@ from tqdm import tqdm
 
 VISUALIZER = Registry('Visualizer')
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class PoseGenVisualizer():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for pose generation task.
@@ -34,9 +34,9 @@ class PoseGenVisualizer():
         self.save_mesh = cfg.save_mesh
 
     def visualize(
-        self, 
-        model: torch.nn.Module, 
-        dataloader: torch.utils.data.DataLoader, 
+        self,
+        model: torch.nn.Module,
+        dataloader: torch.utils.data.DataLoader,
         save_dir: str,
     ) -> None:
         """ Visualize method
@@ -48,22 +48,22 @@ class PoseGenVisualizer():
         """
         model.eval()
         device = model.device
-        
+
         cnt = 0
         for data in dataloader:
             for key in data:
                 if torch.is_tensor(data[key]):
                     data[key] = data[key].to(device)
             data['normalizer'] = dataloader.dataset.normalizer
-            
+
             ksample = 1 if self.vis_denoising else self.ksample
             outputs = model.sample(data, k=ksample) # <B, k, T, D>
-            
+
             for i in range(outputs.shape[0]):
                 scene_id = data['scene_id'][i]
                 cam_tran = data['cam_tran'][i]
                 gender = data['gender'][i]
-                
+
                 origin_cam_tran = data['origin_cam_tran'][i]
                 scene_trans = cam_tran @ np.linalg.inv(origin_cam_tran) # scene_T @ origin_cam_T = cur_cam_T
                 scene_mesh = dataloader.dataset.scene_meshes[scene_id].copy()
@@ -86,12 +86,12 @@ class PoseGenVisualizer():
                     timesteps = list(range(len(body_verts))) + [len(body_verts) - 1] * 10 # repeat last frame
                     for f, t in enumerate(timesteps):
                         meshes = {
-                            'scenes': [scene_mesh], 
+                            'scenes': [scene_mesh],
                             'bodies': [trimesh.Trimesh(vertices=body_verts[t], faces=body_faces)]
                         }
                         save_path = os.path.join(save_imgs_dir, f'{f:0>3d}.png')
                         render_prox_scene(meshes, camera_pose, save_path)
-                    
+
                     ## convert images to gif
                     frame2gif(os.path.join(save_dir, f'{scene_id}', 'series'), save_path_gif, size=(480, 270))
                     os.system(f'rm -rf {save_imgs_dir}')
@@ -122,14 +122,14 @@ class PoseGenVisualizer():
                             meshes['bodies'].append(trimesh.Trimesh(vertices=body_verts[j], faces=body_faces))
                         save_path = os.path.join(save_dir, f'{scene_id}', '000.png')
                         render_prox_scene(meshes, camera_pose, save_path)
-                
+
                 cnt += 1
-            
+
             if cnt >= self.vis_case_num:
                 break
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class MotionGenVisualizer():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for motion generation task.
@@ -141,11 +141,11 @@ class MotionGenVisualizer():
         self.ksample = cfg.ksample
         self.vis_denoising = cfg.vis_denoising
         self.save_mesh = cfg.save_mesh
-    
+
     def visualize(
-        self, 
-        model: torch.nn.Module, 
-        dataloader: torch.utils.data.DataLoader, 
+        self,
+        model: torch.nn.Module,
+        dataloader: torch.utils.data.DataLoader,
         save_dir: str,
     ) -> None:
         """ Visualize method
@@ -165,7 +165,7 @@ class MotionGenVisualizer():
                     data[key] = data[key].to(device)
             data['normalizer'] = dataloader.dataset.normalizer
             data['repr_type'] = dataloader.dataset.repr_type
-            
+
             ksample = 1 if self.vis_denoising else self.ksample
             outputs = model.sample(data, k=ksample) # <B, k, T, L, D>
 
@@ -197,12 +197,12 @@ class MotionGenVisualizer():
                     timesteps = list(range(len(body_verts))) + [len(body_verts) - 1] * 10 # repeat last frame
                     for f, t in enumerate(timesteps):
                         meshes = {
-                            'scenes': [scene_mesh], 
+                            'scenes': [scene_mesh],
                             'bodies': [trimesh.Trimesh(vertices=bv, faces=body_faces) for bv in body_verts[t]]
                         }
                         save_path = os.path.join(save_imgs_dir, f'{f:0>3d}.png')
                         render_prox_scene(meshes, camera_pose, save_path)
-                    
+
                     ## convert images to gif
                     frame2gif(save_imgs_dir, save_path_gif, size=(480, 270))
                     os.system(f'rm -rf {save_imgs_dir}')
@@ -217,7 +217,7 @@ class MotionGenVisualizer():
                     if self.save_mesh:
                         os.makedirs(os.path.join(save_dir, f'{scene_id}_{rand_str}'), exist_ok=True)
                         scene_mesh.export(os.path.join(save_dir, f'{scene_id}_{rand_str}', 'scene.ply'))
-                    
+
                     for k in range(len(body_verts)):
                         save_path_gif = os.path.join(save_dir, f'{scene_id}_{rand_str}', f'{k:3d}.gif')
                         save_imgs_dir = os.path.join(save_dir, f'{scene_id}_{rand_str}', 'series')
@@ -236,7 +236,7 @@ class MotionGenVisualizer():
                                 body_mesh.export(os.path.join(
                                     save_mesh_dir, f'body{j:0>3d}.obj'
                                 ))
-                        
+
                         ## convert image to gif
                         frame2gif(save_imgs_dir, save_path_gif, size=(480, 270))
                         os.system(f'rm -rf {save_imgs_dir}')
@@ -244,12 +244,12 @@ class MotionGenVisualizer():
                 cnt += 1
                 if cnt >= self.vis_case_num:
                     break
-            
+
             if cnt >= self.vis_case_num:
                 break
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class PathPlanningRenderingVisualizer():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for path planning task. Directly rendering images.
@@ -261,7 +261,7 @@ class PathPlanningRenderingVisualizer():
         self.vis_case_num = cfg.vis_case_num
         self.vis_denoising = cfg.vis_denoising
         self.scannet_mesh_dir = cfg.scannet_mesh_dir
-    
+
     def visualize(
         self,
         model: torch.nn.Module,
@@ -287,7 +287,7 @@ class PathPlanningRenderingVisualizer():
                     data[key] = data[key].to(device)
             data['normalizer'] = dataloader.dataset.normalizer
             data['repr_type'] = dataloader.dataset.repr_type
-            
+
             ksample = 1 if self.vis_denoising else self.ksample
             outputs = model.sample(data, k=ksample) # <B, k, T, L, D>
 
@@ -303,7 +303,7 @@ class PathPlanningRenderingVisualizer():
                 scene_mesh.apply_transform(trans_mat[i])
                 camera_pose = np.eye(4)
                 camera_pose[0:3, -1] = np.array([0, 0, 7])
-                
+
                 ## save trajectory
                 if self.vis_denoising:
                     save_path_gif = os.path.join(save_dir, f'{scene_id[i]}_{rand_str}', '000.gif')
@@ -315,7 +315,7 @@ class PathPlanningRenderingVisualizer():
                         path = sequences[t].cpu().numpy() # <horizon, 2>
 
                         render_scannet_path(
-                            {'scene': scene_mesh, 
+                            {'scene': scene_mesh,
                             'target': create_trimesh_node(target[i], color=np.array([0, 255, 0], dtype=np.uint8)),
                             'path': create_trimesh_nodes_path(path, merge=True)},
                             camera_pose=camera_pose,
@@ -337,16 +337,16 @@ class PathPlanningRenderingVisualizer():
                             camera_pose=camera_pose,
                             save_path=os.path.join(save_imgs_dir, f'{t:0>3d}.png')
                         )
-                
+
                 cnt += 1
                 if cnt >= self.vis_case_num:
                     break
-            
+
             if cnt >= self.vis_case_num:
                 break
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class GraspGenVisualizer():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for pose generation task.
@@ -406,8 +406,8 @@ class GraspGenVisualizer():
                 if cnt >= vis_cnt:
                     break
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class GraspGenURVisualizer():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for pose generation task.
@@ -491,8 +491,8 @@ class GraspGenURVisualizer():
             res['sample_qpos'][object_name] = np.array(outputs.cpu().detach())
         pickle.dump(res, open(os.path.join(save_dir, 'res_diffuser.pkl'), 'wb'))
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class PoseGenVisualizerHF():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for pose generation task.
@@ -503,16 +503,16 @@ class PoseGenVisualizerHF():
         self.ksample = cfg.ksample
 
     def visualize(
-        self, 
-        model: torch.nn.Module, 
-        dataloader: torch.utils.data.DataLoader, 
+        self,
+        model: torch.nn.Module,
+        dataloader: torch.utils.data.DataLoader,
     ) -> Any:
         """ Visualize method
 
         Args:
             model: diffusion model
             dataloader: test dataloader
-        
+
         Return:
             Results for gradio rendering.
         """
@@ -524,14 +524,14 @@ class PoseGenVisualizerHF():
                 if torch.is_tensor(data[key]):
                     data[key] = data[key].to(device)
             data['normalizer'] = dataloader.dataset.normalizer
-            
+
             outputs = model.sample(data, k=self.ksample) # <B, k, T, D>
-            
+
             i = 0
             scene_id = data['scene_id'][i]
             cam_tran = data['cam_tran'][i]
             gender = data['gender'][i]
-            
+
             origin_cam_tran = data['origin_cam_tran'][i]
             scene_trans = cam_tran @ np.linalg.inv(origin_cam_tran) # scene_T @ origin_cam_T = cur_cam_T
             scene_mesh = dataloader.dataset.scene_meshes[scene_id].copy()
@@ -556,8 +556,8 @@ class PoseGenVisualizerHF():
                 res_images.append(img)
             return res_images
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class MotionGenVisualizerHF():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for motion generation task.
@@ -566,18 +566,18 @@ class MotionGenVisualizerHF():
             cfg: visuzalizer configuration
         """
         self.ksample = cfg.ksample
-    
+
     def visualize(
-        self, 
-        model: torch.nn.Module, 
-        dataloader: torch.utils.data.DataLoader, 
+        self,
+        model: torch.nn.Module,
+        dataloader: torch.utils.data.DataLoader,
     ) -> None:
         """ Visualize method
 
         Args:
             model: diffusion model
             dataloader: test dataloader
-        
+
         Return:
             Results for gradio rendering.
         """
@@ -590,7 +590,7 @@ class MotionGenVisualizerHF():
                     data[key] = data[key].to(device)
             data['normalizer'] = dataloader.dataset.normalizer
             data['repr_type'] = dataloader.dataset.repr_type
-            
+
             outputs = model.sample(data, k=self.ksample) # <B, k, T, L, D>
 
             i = 0
@@ -613,7 +613,7 @@ class MotionGenVisualizerHF():
             smplx_params = outputs[i, :, -1, ...] # <k, ...>
             body_verts, body_faces, body_joints = dataloader.dataset.SMPLX.run(smplx_params, gender)
             body_verts = body_verts.numpy()
-            
+
             res_ksamples = []
             for k in range(len(body_verts)):
                 res_images = []
@@ -624,8 +624,8 @@ class MotionGenVisualizerHF():
                 res_ksamples.append(res_images)
             return res_ksamples
 
-@VISUALIZER.register()
 @torch.no_grad()
+@VISUALIZER.register()
 class PathPlanningRenderingVisualizerHF():
     def __init__(self, cfg: DictConfig) -> None:
         """ Visual evaluation class for path planning task. Directly rendering images.
@@ -635,7 +635,7 @@ class PathPlanningRenderingVisualizerHF():
         """
         self.ksample = cfg.ksample
         self.scannet_mesh_dir = cfg.scannet_mesh_dir
-    
+
     def visualize(
         self,
         model: torch.nn.Module,
@@ -656,7 +656,7 @@ class PathPlanningRenderingVisualizerHF():
                     data[key] = data[key].to(device)
             data['normalizer'] = dataloader.dataset.normalizer
             data['repr_type'] = dataloader.dataset.repr_type
-            
+
             outputs = model.sample(data, k=self.ksample) # <B, k, T, L, D>
 
             scene_id = data['scene_id']
@@ -684,7 +684,7 @@ class PathPlanningRenderingVisualizerHF():
                     save_path=None
                 )
                 res_images.append(img)
-            
+
             return res_images
 
 def create_visualizer(cfg: DictConfig) -> nn.Module:
@@ -692,7 +692,7 @@ def create_visualizer(cfg: DictConfig) -> nn.Module:
     Args:
         cfg: configuration object
         slurm: on slurm platform or not. This field is used to specify the data path
-    
+
     Return:
         A visualizer
     """

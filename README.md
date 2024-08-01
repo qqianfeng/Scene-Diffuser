@@ -78,6 +78,7 @@ We introduce SceneDiffuser, a conditional generative model for 3D scene understa
     ```bash
     pip install git+https://github.com/daveredrum/Pointnet2.ScanNet.git#subdirectory=pointnet2
     ```
+    If this don't work, go to their github page, clone and install from source.
 
 ## Data & Checkpoints
 

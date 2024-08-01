@@ -34,6 +34,7 @@ dataset:
   data_dir_slurm: /home/qian.feng/data/MultiDex_UR/shadowhand/
   scene_path: /home/qian.feng/data/MultiDex_UR/object_pcds.pkl
   scene_path_slurm: /home/qian.feng/data/MultiDex_UR/object_pcds.pkl
+  asset_dir: /home/qian.feng/data/MultiDex_UR
 
   train_transforms: ['NumpyToTensor']
   test_transforms: ['NumpyToTensor']

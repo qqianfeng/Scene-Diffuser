@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debugpy: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args":[
+                "hydra/job_logging=none",
+                "hydra/hydra_logging=none",
+                "exp_dir=./outputs/GPUR/",
+                "diffuser=ddpm",
+                "diffuser.loss_type=l1",
+                "diffuser.steps=100",
+                "model=unet_grasp",
+                "task=grasp_gen_ur",
+                "task.dataset.normalize_x=true",
+                "task.dataset.normalize_x_trans=true",
+                "optimizer=grasp_with_object",
+                "optimizer.scale=0.1"]
+        }
+    ]
+}
